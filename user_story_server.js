@@ -218,6 +218,6 @@ us.get("/insert_two", (req, res) => {
 
 
 
-us.listen(5001, () => {
+us.listen(process.env.PORT || 5001, () => {
   console.log("listening at port: 5001");
 });

@@ -211,6 +211,7 @@ us.get("/insert_two", (req, res) => {
     else {
       console.log(obj);
       console.log("Obj saved successfully")
+      res.json({})
       // res.redirect("/micr-fr");
     }
   })

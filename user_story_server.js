@@ -1,35 +1,50 @@
+//Following packages have been used, read respective documentation for more details.
 var express = require("express");
 var us = express(); //us stands for user-story
 var mongoose = require("mongoose");
-var cors = require("cors");
-var bodyParser = require("body-parser");
+var cors = require("cors");// Used to establish sever-to-server communication,
+// Here it is used to communicate between React Server and this Microservice Server, which is otherwise blocked.
+var bodyParser = require("body-parser");// Used to parse queries from URLs.
 
 us.use(bodyParser.urlencoded({ extended: true }));
 us.use(bodyParser.json());
 us.use(cors());
 
+// Imports User_Story Schema from "user_story_schema.js"
 var { User_Story } = require("./user_story_schema.js");
 
+// Connects to MongoDB database,read MongoDB documentation on how to use below code.
 mongoose.connect(
   "mongodb+srv://micro:qwerty123@cluster0-bmsv0.mongodb.net/test?retryWrites=true&w=majority",
   { useNewUrlParser: true }
 );
 
+/*
+Learn the difference between express.post,get,use etc.
+Also get acquainted with the following operations in MongoDB: mongoose.find, findOne, deleteOne, Create etc.
+These are used to perform CRUD operations in MongoDB
+*/
+
+
+
+//The below function is fired when /getuserstory route is hit.
 us.post("/getuserstory", (req, res) => {
   //check for authentication
   let owner_id = req.body.owner;
-  console.log("Ownwr     :"+owner_id)
-  User_Story.find({owner: owner_id}, (err, user_story_obj) => {
+  console.log("Ownwr     :"+owner_id)  // use log for debugging purposes as required
+  // To see console in Chrome press Ctrl+Shift+I.
+  User_Story.find({owner: owner_id}, (err, user_story_obj) => {  //Returns result of the query from the MongoDB.
     if (err) {
       console.log("error: " + JSON.stringify(err));
       res.send({status:true,error:err})
     } else {
       console.log(user_story_obj)
-      res.json({user_stories:user_story_obj});
+      res.json({user_stories:user_story_obj});// Used to return object containing the results to client.
     }
   });
 });
 
+// Retrieves only one object of the id mentioned
 us.post("/retrieve_one", (req, res) => {
   let us_id = req.body.us_id;
   console.log("US Id : " + req.body.us_id)
@@ -38,8 +53,7 @@ us.post("/retrieve_one", (req, res) => {
       console.log("Erroe:" + err);
       res.send({status:false,error:err})
     } else {
-      // console.log(one_us);
-      res.send({status:true,user_story:one_us});
+      res.send({status:true,user_story:one_us});//See the difference between res.json and res.send
     }
   });
 });
@@ -61,8 +75,6 @@ us.post("/link_us",(req,res) =>{
     let micro_type=req.body.micro_type
     let micro_id=req.body.micro_id
     console.log("usid"+us_id)
-    // let temp=""
-    // temp=temp+micro_id
     console.log("hi"+JSON.stringify(req.body))
     User_Story.find({_id:us_id},(err, obj) => {
       if(err)
@@ -80,9 +92,6 @@ us.post("/link_us",(req,res) =>{
         {
           $push:{link_to_ms: micro_id},          
         },
-        // {
-        //   upsert: false
-        // },
         function (error, success) {
           if (error) {
               console.log("err"+error);
@@ -100,9 +109,6 @@ us.post("/link_us",(req,res) =>{
         {
           $push:{link_to_mf: micro_id},          
         },
-        // {
-        //   upsert: false
-        // },
         function (error, success) {
           if (error) {
               console.log(error);
@@ -111,32 +117,6 @@ us.post("/link_us",(req,res) =>{
           }
       }
       );
-    //   User_Story.findByIdAndUpdate(
-    //     us_id,
-    //   {
-    //     $set: {
-    //       link_to_mf: temp,  
-    //     }
-    //   },
-    //   (err, obj) => {
-    
-    //      console.log("Obj2" + JSON.stringify(obj));
-    
-      
-    //   }
-    // );
-    //Model.findOneAndUpdate({_id: us_id}, { linkd: 'jason bourne' }, options, callback)
-      // User_Story.update(
-      //   {
-      //     _id:us_id
-      //   },
-      //   {
-      //     links_to_mf: micro_id,          
-      //   },
-      //   {
-      //     upsert: false
-      //   }
-      // );
     }
     
     User_Story.find({_id:us_id},(err, obj) => {
@@ -181,10 +161,6 @@ us.post("/modifyuserstory", (req, res) => {
       desc: req.body.desc,
       priority: req.body.priority,
       status: req.body.status
-      // owner: req.owner,
-      // links_to_ms: req.links_to_ms,
-      // links_to_mf: links_to_mf,
-      // progress: req.progress
     },
     function(err,us){
       if(err){
@@ -198,6 +174,7 @@ us.post("/modifyuserstory", (req, res) => {
   );
 });
 
+// Sample GET request
 us.get("/insert_two", (req, res) => {
   User_Story.create({
     title:"Travel Book",
@@ -212,13 +189,13 @@ us.get("/insert_two", (req, res) => {
       console.log(obj);
       console.log("Obj saved successfully")
       res.json({})
-      // res.redirect("/micr-fr");
     }
   })
 });
 
 
-
+// This server will run on localhost:5001 on local machine
+// "process.env.PORT" will automatically detect the port to run when deployed on Heroku or any other Cloud
 us.listen(process.env.PORT || 5001, () => {
   console.log("listening at port: 5001");
 });
